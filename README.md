@@ -1,6 +1,6 @@
 # Update Notifier
 
-A simple KubeJS script that notifies users of modpacks about modpack updates. Made by KostromDan, packaged for KJSPKG.
+A simple KubeJS script that notifies users of modpacks about updates. Made by KostromDan, packaged for KJSPKG.
 
 ## Demo:
 https://youtu.be/_BTQyyUhRvs
