@@ -19,6 +19,7 @@ let modpack_name = 'M-Tech'
 ```
 
 4. Install and config properly Better Compatibility Checker[https://www.curseforge.com/minecraft/mc-mods/better-compatibility-checker]
+
 By default script will parse version from it.
 If you don't want to use it:
 comment/add this lines of code:
