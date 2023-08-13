@@ -4,29 +4,18 @@ const $ConfirmScreen = Java.loadClass('net.minecraft.client.gui.screens.ConfirmS
 
 let gists_id = '52b72e5ff28b23f7a3b957a88281185b'
 let modpack_name = 'M-Tech'
-let update_checking_delay = 5 * 60 // in seconds
 
-ClientEvents.loggedIn(event => {
-    Utils.server.scheduleInTicks(60, c => {
-        check_updates()
-        Utils.server.scheduleInTicks(update_checking_delay * 20, e => {
-            let current = JsonIO.read('kubejs/update_notifier.json')
-            if (!current["is_notified_at_this_launch"]) {
-                check_updates()
-                e.reschedule()
-            }
-        })
-    })
+
+NetworkEvents.fromServer('update_notifier_check', event => {
+    check_updates()
 })
 
 function check_updates() {
     let version = $BCC.localPingData.version
 
 
-    let current = JsonIO.read('kubejs/update_notifier.json')
-    if (current == null) {
-        current = {}
-    }
+    let current = JsonIO.read('kubejs/update_notifier.json') ?? {}
+
     if (!("enabled" in current)) {
         current["enabled"] = true
     }
@@ -117,7 +106,7 @@ function check_updates() {
                 console.log(`${modpack_name}-logging: No updates found. Modpack version is actual!`)
             }
         } else {
-            console.log(`${modpack_name}-logging: Exeption catched while checking modpack updates:\n${result.exception}`)
+            console.log(`${modpack_name}-logging: Exeption caught while checking modpack updates:\n${result.exception}`)
         }
     })
 }

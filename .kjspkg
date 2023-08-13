@@ -4,6 +4,6 @@
     
     "versions": [9],
     "modloaders": ["forge", "fabric"],
-    "dependencies": [netjs],
+    "dependencies": ["mod:netjs"],
     "incompatibilities": []
 }
