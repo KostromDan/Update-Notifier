@@ -1,0 +1,9 @@
+{
+    "author": "KostromDan",
+    "description": "More info: https://github.com/KostromDan/Update-Notifier/blob/main/README.md",
+    
+    "versions": [9],
+    "modloaders": ["forge", "fabric"],
+    "dependencies": [netjs],
+    "incompatibilities": []
+}
