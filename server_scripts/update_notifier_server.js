@@ -1,4 +1,11 @@
-let update_checking_delay = 5 * 60 // in seconds
+let update_checking_delay = 20 * 60 // in seconds
+
+let pastebin_id = 'wTjASWSG'
+let modpack_name = 'M-Tech'
+let client_data = {
+    pastebin_id: pastebin_id,
+    modpack_name: modpack_name
+}
 
 
 function check_updates() {
@@ -10,11 +17,12 @@ function check_updates() {
 }
 
 function check_updates_for(player) {
-    player.sendData('update_notifier_check', {})
+    player.sendData('update_notifier_check', client_data)
 }
 
 PlayerEvents.loggedIn(event => {
     let player = event.player
+    player.sendData('update_notifier_update_client_data', client_data)
     Utils.server.scheduleInTicks(120, e => {
         check_updates_for(player)
     })
@@ -31,9 +39,10 @@ ServerEvents.loaded(event => {
     if (!Utils.server.isDedicated()) {
         return
     }
+    let $BCC = Java.loadClass('dev.wuffs.bcc.BCC')
     let version = $BCC.localPingData.version
     Utils.server.scheduleInTicks(120, e => {
-        NetJS.getGists(gists_id, result => {
+        NetJS.getPasteBin(pastebin_id, result => {
             if (result.success) {
                 let json_result = result.parseRawToJson()
                 let latest_version = json_result['version']

@@ -1,20 +1,30 @@
-const $BCC = Java.loadClass('dev.wuffs.bcc.BCC')
 const $ConfirmScreen = Java.loadClass('net.minecraft.client.gui.screens.ConfirmScreen')
 
 
-let gists_id = '52b72e5ff28b23f7a3b957a88281185b'
-let modpack_name = 'M-Tech'
+let pastebin_id = null // defined in server part of the script
+let modpack_name = null // defined in server part of the script
+
+function parse_client_data(data) {
+    pastebin_id = data["pastebin_id"]
+    modpack_name = data["modpack_name"]
+}
 
 
 NetworkEvents.fromServer('update_notifier_check', event => {
+    parse_client_data(event.data)
     check_updates()
 })
 
+NetworkEvents.fromServer('update_notifier_update_client_data', event => {
+    parse_client_data(event.data)
+})
+
 function check_updates() {
+    let $BCC = Java.loadClass('dev.wuffs.bcc.BCC')
     let version = $BCC.localPingData.version
 
 
-    let current = JsonIO.read('kubejs/update_notifier.json') ?? {}
+    let current = JsonIO.read('local/update_notifier.json') ?? {}
 
     if (!("enabled" in current)) {
         current["enabled"] = true
@@ -25,19 +35,19 @@ function check_updates() {
     if (!("is_notified_at_this_launch" in current)) {
         current["is_notified_at_this_launch"] = false
     }
-    JsonIO.write('kubejs/update_notifier.json', current)
+    JsonIO.write('local/update_notifier.json', current)
 
 
     if (current["is_notified_at_this_launch"]) {
         return
     }
 
-    NetJS.getGists(gists_id, result => {
+    NetJS.getPasteBin(pastebin_id, result => {
         if (result.success) {
             let json_result = result.parseRawToJson()
             let latest_version = json_result['version']
 
-            current = JsonIO.read('kubejs/update_notifier.json')
+            current = JsonIO.read('local/update_notifier.json')
 
             if (version < latest_version) {
                 console.log(`${modpack_name}-logging: Update of the modpack found! ${latest_version} is out. Currently running ${version}`)
@@ -101,7 +111,7 @@ function check_updates() {
                     ]))
                 }
                 current["is_notified_at_this_launch"] = true
-                JsonIO.write('kubejs/update_notifier.json', current)
+                JsonIO.write('local/update_notifier.json', current)
             } else {
                 console.log(`${modpack_name}-logging: No updates found. Modpack version is actual!`)
             }
@@ -112,7 +122,7 @@ function check_updates() {
 }
 
 NetworkEvents.fromServer('update_notifier_skip', event => {
-    let current = JsonIO.read('kubejs/update_notifier.json')
+    let current = JsonIO.read('local/update_notifier.json')
     if (current == null) {
         return
     }
@@ -139,16 +149,14 @@ NetworkEvents.fromServer('update_notifier_skip', event => {
             Component.white("is already skipped!\n"),
         ]))
     }
-    JsonIO.write('kubejs/update_notifier.json', current)
+    JsonIO.write('local/update_notifier.json', current)
 })
 
 function switcher(b) {
-    let current = JsonIO.read('kubejs/update_notifier.json')
-    if (current == null) {
-        return
-    }
+    let current = JsonIO.read('local/update_notifier.json') ?? {}
+
     current["enabled"] = b
-    JsonIO.write('kubejs/update_notifier.json', current)
+    JsonIO.write('local/update_notifier.json', current)
 }
 
 NetworkEvents.fromServer('update_notifier_disable', event => {
@@ -195,12 +203,10 @@ NetworkEvents.fromServer('update_notifier_enable', event => {
 })
 
 NetworkEvents.fromServer('update_notifier_clean_skip_list', event => {
-    let current = JsonIO.read('kubejs/update_notifier.json')
-    if (current == null) {
-        return
-    }
+    let current = JsonIO.read('local/update_notifier.json') ?? {}
+
     current["skipped_versions"] = []
-    JsonIO.write('kubejs/update_notifier.json', current)
+    JsonIO.write('local/update_notifier.json', current)
 
     Client.player.tell(Component.join(' ', [
         Component.white(`\nSkipped versions list`),
